@@ -26,6 +26,5 @@ public struct ChatRoomView: View {
             }
             .padding(.vertical, 2)
         }
-        // .navigationTitle(room.name)
     }
 }
