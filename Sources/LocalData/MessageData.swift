@@ -6,6 +6,15 @@ public typealias MessageMemberID = String
 public enum RoomType: Codable {
     case directMessage(MessageMemberID)
     case group([MessageMemberID])
+
+    public var name: String {
+        switch self {
+        case .directMessage(_):
+            return "Direct Message"
+        case .group(_):
+            return "Group"
+        }
+    }
 }
 
 @Model
