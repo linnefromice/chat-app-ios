@@ -4,74 +4,117 @@ import SwiftUI
 
 public struct ChatEntryView: View {
     @Environment(\.modelContext) private var modelContext
+    @State private var roomCount: Int = 3
+    @State private var messageCount: Int = 5
+    @State private var memberCount: Int = 3
+
+    @State private var storedRoomCount: Int? = nil
+    @State private var storedMemberCount: Int? = nil
 
     public init() {}
 
+    var factory: MessageRepositoryFactory {
+        MessageRepositoryFactoryImpl(modelContext)
+    }
+
     public var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                NavigationLink(destination: ChatListView()) {
-                    Text("ChatListView")
+            Form {
+                Section("Navigation") {
+                    NavigationLink(destination: ChatListView()) {
+                        Text("ChatListView")
+                    }
                 }
-                Button(action: addSampleData) {
-                    Text("Add Sample Data")
+
+                Section("Sample Data Generator") {
+                    Stepper("ルーム数: \(roomCount)", value: $roomCount, in: 1...9)
+                    Stepper("メッセージ数/ルーム: \(messageCount)", value: $messageCount, in: 1...20)
+                    Stepper("メンバー数/ルーム: \(memberCount)", value: $memberCount, in: 0...6)
+
+                    Button(action: {
+                        addRandomData(
+                            roomCount: roomCount,
+                            messageCount: messageCount,
+                            minMemberCount: memberCount
+                        )
+                    }) {
+                        Text("サンプルデータを追加")
+                    }
                 }
-                Button(action: clean) {
-                    Text("Clean")
+
+                Section("Data Management") {
+                    Text("ルーム数: \(storedRoomCount.map { "\($0)" } ?? "Not loaded")")
+                    Text("メンバー数: \(storedMemberCount.map { "\($0)" } ?? "Not loaded")")
+
+                    Button(action: clean) {
+                        Text("全データを削除")
+                            .foregroundColor(.red)
+                    }
+
+                    Button(action: {
+                        withCommit(modelContext) {
+                            let memberRepository = factory.memberRepository()
+                            try! memberRepository.deleteAll()
+                            try! registerAllMembers(memberRepository)
+                            storedMemberCount = try! memberRepository.count()
+                        }
+                    }) {
+                        Text("メンバーリセット")
+                            .foregroundColor(.red)
+                    }
                 }
             }
+            .navigationTitle("Chat App")
+        }
+        .onAppear {
+
+            let memberRepository = factory.memberRepository()
+            if try! memberRepository.count() == 0 {
+                withCommit(modelContext) {
+                    try! registerAllMembers(memberRepository)
+                }
+            }
+
+            storedRoomCount = try! factory.rootRepository().count()
+            storedMemberCount = try! factory.memberRepository().count()
         }
     }
 
-    private func addSampleData() {
-        let samples: [(MessageRootData, [String])] = [
-            (
-                MessageRootData(name: "DM - Mike"),
-                [
-                    "チャットルームへようこそ！",
-                    "はじめまして！",
-                    "こんにちは！",
-                ]
-            ),
-            (
-                MessageRootData(name: "Group - Dev Team"),
-                [
-                    "プロジェクトの進捗はいかがですか？",
-                    "順調に進んでいます",
-                    "次のミーティングは明日です",
-                ]
-            ),
-            (
-                MessageRootData(name: "Group - My Self"),
-                [
-                    "今日は晴れていますね",
-                    "散歩日和です",
-                    "いい天気ですね",
-                ]
-            ),
-        ]
-
-        samples.forEach { room, messages in
-            let messageContents = messages.enumerated().map { index, content in
-                MessageContentData(
-                    content: content,
-                    createdAt: Date().addingTimeInterval(Double(index * -3600)),
-                    room: room
-                )
-            }
-            room.messages = messageContents
-            // 最後のメッセージで更新
-            if let lastMessage = messageContents.last {
-                room.updateLastMessage(lastMessage)
-            }
-            modelContext.insert(room)
+    private func addRandomData(
+        roomCount: Int,
+        messageCount: Int,
+        minMemberCount: Int = 0,
+        maxMemberCount: Int = 4
+    ) {
+        let factory = MessageRepositoryFactoryImpl(modelContext)
+        withCommit(modelContext) {
+            try! bulkGenerateMockRoom(
+                factory,
+                roomCount: roomCount,
+                messageCount: messageCount,
+                minMemberCount: minMemberCount,
+                maxMemberCount: maxMemberCount
+            )
         }
-
-        try? modelContext.save()
+        storedRoomCount = try! factory.rootRepository().count()
     }
 
     private func clean() {
-        try? modelContext.delete(model: MessageRootData.self)
-        try? modelContext.delete(model: MessageContentData.self)
+        withCommit(modelContext) {
+            try? modelContext.delete(model: MessageRootData.self)
+            try? modelContext.delete(model: MessageContentData.self)
+        }
+        storedRoomCount = try! factory.rootRepository().count()
+        storedMemberCount = try! factory.memberRepository().count()
     }
+}
+
+#Preview {
+    ChatEntryView()
+        .modelContainer(
+            for: [
+                MessageRootData.self,
+                MessageContentData.self,
+                MessageMember.self,
+            ], inMemory: true)
 }

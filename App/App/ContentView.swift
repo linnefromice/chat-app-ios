@@ -8,6 +8,7 @@ struct ContentView: View {
             .modelContainer(for: [
                 MessageRootData.self,
                 MessageContentData.self,
+                MessageMember.self,
             ])
     }
 }
