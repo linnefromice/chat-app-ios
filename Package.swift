@@ -4,21 +4,24 @@
 import PackageDescription
 
 let package = Package(
-    name: "chat-app-ios",
+    name: "ChatLibrary",
+    defaultLocalization: "en",
+    platforms: [
+        .iOS(.v18)
+    ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "chat-app-ios",
-            targets: ["chat-app-ios"]),
+            name: "LocalData",
+            targets: ["LocalData"]),
+        .library(
+            name: "FeatureChat",
+            targets: ["FeatureChat"])
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
+        .target(name: "LocalData"),
         .target(
-            name: "chat-app-ios"),
-        .testTarget(
-            name: "chat-app-iosTests",
-            dependencies: ["chat-app-ios"]
-        ),
+            name: "FeatureChat",
+            dependencies: ["LocalData"]
+        )
     ]
 )

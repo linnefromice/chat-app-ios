@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C1563A512D6ED0AD00A0461F /* FeatureChat in Frameworks */ = {isa = PBXBuildFile; productRef = C1563A502D6ED0AD00A0461F /* FeatureChat */; };
+		C1563A532D6ED0AD00A0461F /* LocalData in Frameworks */ = {isa = PBXBuildFile; productRef = C1563A522D6ED0AD00A0461F /* LocalData */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C1563A2C2D6EBD6200A0461F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1563A532D6ED0AD00A0461F /* LocalData in Frameworks */,
+				C1563A512D6ED0AD00A0461F /* FeatureChat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = App;
 			packageProductDependencies = (
+				C1563A502D6ED0AD00A0461F /* FeatureChat */,
+				C1563A522D6ED0AD00A0461F /* LocalData */,
 			);
 			productName = App;
 			productReference = C1563A2C2D6EBD6200A0461F /* App.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = C1563A232D6EBD6200A0461F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C1563A4F2D6ED0AD00A0461F /* XCLocalSwiftPackageReference "../../chat-app-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C1563A2D2D6EBD6200A0461F /* Products */;
 			projectDirPath = "";
@@ -252,6 +264,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"App/Preview Content\"";
+				DEVELOPMENT_TEAM = T8FH736J9Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -280,6 +293,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"App/Preview Content\"";
+				DEVELOPMENT_TEAM = T8FH736J9Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -322,6 +336,24 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		C1563A4F2D6ED0AD00A0461F /* XCLocalSwiftPackageReference "../../chat-app-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../chat-app-ios";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C1563A502D6ED0AD00A0461F /* FeatureChat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeatureChat;
+		};
+		C1563A522D6ED0AD00A0461F /* LocalData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LocalData;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C1563A242D6EBD6200A0461F /* Project object */;
 }

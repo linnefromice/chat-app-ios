@@ -1,21 +1,13 @@
-//
-//  ContentView.swift
-//  App
-//
-//  Created by arata.haruyama on 2025/02/26.
-//
-
 import SwiftUI
+import LocalData
+import FeatureChat
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        ChatListView()
+            .modelContainer(for: [
+                MessageRootData.self
+            ])
     }
 }
 
