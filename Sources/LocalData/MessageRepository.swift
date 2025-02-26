@@ -86,6 +86,7 @@ public protocol MessageContentRepository {
     func getByRoomId(_ roomId: Int) throws -> [MessageContentData]
     func insert(
         content: String,
+        senderId: Int,
         room: MessageRootData
     ) throws -> MessageContentData
     func deleteAll() throws
@@ -124,11 +125,13 @@ public final class MessageContentRepositoryImpl: MessageContentRepository {
 
     public func insert(
         content: String,
+        senderId: Int,
         room: MessageRootData
     ) throws -> MessageContentData {
         let message = MessageContentData(
             id: try self.count(),
             content: content,
+            senderId: senderId,
             room: room
         )
         context.insert(message)

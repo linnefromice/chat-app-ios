@@ -1,6 +1,8 @@
 import Foundation
 import LocalData
 
+public let PLAYER_ID = 0
+
 let DUMMY_NAMES: [(name: String, isDM: Bool)] = [
     ("Friend One", true),
     ("Friend Two", true),
@@ -68,7 +70,7 @@ func generateMockRoom(
     _ factory: any MessageRepositoryFactory,
     name: String,
     roomType: RoomType,
-    messages: [String]
+    messages: [(senderId: Int, content: String)]
 ) throws {
     let rootRepository = factory.rootRepository()
     let contentRepository = factory.contentRepository()
@@ -79,9 +81,10 @@ func generateMockRoom(
         lastMessageDateStored: Date(),
         lastMessageContentStored: ""
     )
-    let messageContents = messages.enumerated().map { index, content in
+    let messageContents = messages.enumerated().map { index, item in
         let content = try! contentRepository.insert(
-            content: content,
+            content: item.content,
+            senderId: item.senderId,
             room: room
         )
         return content
@@ -103,9 +106,17 @@ func bulkGenerateMockRoom(
 
     let selectedNames = Array(DUMMY_NAMES.shuffled().prefix(roomCount))
     selectedNames.forEach { name, isDM in
-        let messages = Array(DUMMY_MESSAGES.shuffled().prefix(messageCount))
+        let messageContents = Array(DUMMY_MESSAGES.shuffled().prefix(messageCount))
         let memberCount = Int.random(in: minMemberCount...maxMemberCount)
         let selectedMembers = Array(members.shuffled().prefix(memberCount))
+        // NOTE: 0 is player
+        let senderIds = [PLAYER_ID] + selectedMembers.map(\.id)
+
+        let messages = messageContents.map { msg in
+            let senderId = senderIds.randomElement()!
+            return (senderId, msg)
+        }
+
         let roomType: RoomType =
             isDM
             ? .directMessage(selectedMembers.first!.id)

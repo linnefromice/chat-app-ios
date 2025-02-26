@@ -55,17 +55,20 @@ public final class MessageContentData {
     @Attribute(.unique) public var id: Int
     public var content: String
     public var createdAt: Date
+    public var senderId: Int
     public var room: MessageRootData?
 
     public init(
         id: Int,
         content: String,
         createdAt: Date = Date(),
+        senderId: Int,
         room: MessageRootData? = nil
     ) {
         self.id = id
         self.content = content
         self.createdAt = createdAt
+        self.senderId = senderId
         self.room = room
     }
 }
