@@ -6,7 +6,8 @@ struct ContentView: View {
     var body: some View {
         ChatListView()
             .modelContainer(for: [
-                MessageRootData.self
+                MessageRootData.self,
+                MessageContentData.self
             ])
     }
 }
