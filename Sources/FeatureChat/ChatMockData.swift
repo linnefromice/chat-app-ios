@@ -1,7 +1,7 @@
 import Foundation
 import LocalData
 
-public let PLAYER_ID = 0
+public let PLAYER_ID = "0"
 
 let DUMMY_NAMES: [(name: String, isDM: Bool)] = [
     ("Friend One", true),
@@ -35,33 +35,33 @@ let DUMMY_MESSAGES = [
     "今日空いていますか？もしよければ遊びに行きませんか？",
 ]
 
-let DUMMY_MEMBERS: [(id: Int, name: String)] = [
-    (1, "Alice"),
-    (2, "Bob"),
-    (3, "Charlie"),
-    (4, "Dave"),
-    (5, "Eve"),
-    (6, "Frank"),
-    (7, "Grace"),
-    (8, "Mike"),
-    (9, "John"),
-    (10, "Sarah"),
-    (11, "Emma"),
-    (12, "David"),
-    (13, "Lisa"),
-    (14, "Tom"),
-    (15, "Jerry"),
-    (16, "John"),
-    (17, "Jane"),
-    (18, "Jim"),
-    (19, "Jill"),
-    (20, "Jack"),
+let DUMMY_MEMBERS: [String] = [
+    "Alice",
+    "Bob",
+    "Charlie",
+    "Dave",
+    "Eve",
+    "Frank",
+    "Grace",
+    "Mike",
+    "John",
+    "Sarah",
+    "Emma",
+    "David",
+    "Lisa",
+    "Tom",
+    "Jerry",
+    "John",
+    "Jane",
+    "Jim",
+    "Jill",
+    "Jack",
 ]
 
 func registerAllMembers(
     _ repository: any MessageMemberRepository
 ) throws {
-    DUMMY_MEMBERS.forEach { _, name in
+    DUMMY_MEMBERS.forEach { name in
         try! repository.insert(name: name)
     }
 }
@@ -70,7 +70,7 @@ func generateMockRoom(
     _ factory: any MessageRepositoryFactory,
     name: String,
     roomType: RoomType,
-    messages: [(senderId: Int, content: String)]
+    messages: [(senderId: String, content: String)]
 ) throws {
     let rootRepository = factory.rootRepository()
     let contentRepository = factory.contentRepository()
@@ -81,12 +81,14 @@ func generateMockRoom(
         lastMessageDateStored: Date(),
         lastMessageContentStored: ""
     )
+    print("room \(room.id)")
     let messageContents = messages.enumerated().map { index, item in
         let content = try! contentRepository.insert(
             content: item.content,
             senderId: item.senderId,
             room: room
         )
+        print("content \(content.id)")
         return content
     }
     if let lastMessage = messageContents.last {

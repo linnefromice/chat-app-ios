@@ -11,7 +11,7 @@ public func withCommit(_ context: ModelContext, block: () throws -> Void) {
 }
 
 public protocol MessageRootRepository {
-    func find(_ id: Int) throws -> MessageRootData?
+    func find(_ id: String) throws -> MessageRootData?
     func getAll(sortBy: SortDescriptor<MessageRootData>) throws -> [MessageRootData]
     func count() throws -> Int
     func insert(
@@ -30,7 +30,7 @@ public final class MessageRootRepositoryImpl: MessageRootRepository {
         self.context = context
     }
 
-    public func find(_ id: Int) throws -> MessageRootData? {
+    public func find(_ id: String) throws -> MessageRootData? {
         let descriptor = FetchDescriptor<MessageRootData>(
             predicate: #Predicate { room in
                 room.id == id
@@ -63,7 +63,6 @@ public final class MessageRootRepositoryImpl: MessageRootRepository {
         lastMessageContentStored: String = ""
     ) throws -> MessageRootData {
         let room = MessageRootData(
-            id: try self.count(),
             name: name,
             roomType: roomType,
             lastMessageDateStored: lastMessageDateStored,
@@ -81,12 +80,12 @@ public final class MessageRootRepositoryImpl: MessageRootRepository {
 // MARK: - Message Content Repository
 
 public protocol MessageContentRepository {
-    func find(_ id: Int) throws -> MessageContentData?
+    func find(_ id: String) throws -> MessageContentData?
     func count() throws -> Int
-    func getByRoomId(_ roomId: Int) throws -> [MessageContentData]
+    func getByRoomId(_ roomId: String) throws -> [MessageContentData]
     func insert(
         content: String,
-        senderId: Int,
+        senderId: String,
         room: MessageRootData
     ) throws -> MessageContentData
     func deleteAll() throws
@@ -99,7 +98,7 @@ public final class MessageContentRepositoryImpl: MessageContentRepository {
         self.context = context
     }
 
-    public func find(_ id: Int) throws -> MessageContentData? {
+    public func find(_ id: String) throws -> MessageContentData? {
         let descriptor = FetchDescriptor<MessageContentData>(
             predicate: #Predicate { message in
                 message.id == id
@@ -113,7 +112,7 @@ public final class MessageContentRepositoryImpl: MessageContentRepository {
         return try context.fetchCount(descriptor)
     }
 
-    public func getByRoomId(_ roomId: Int) throws -> [MessageContentData] {
+    public func getByRoomId(_ roomId: String) throws -> [MessageContentData] {
         let descriptor = FetchDescriptor<MessageContentData>(
             predicate: #Predicate { message in
                 message.room?.id == roomId
@@ -125,11 +124,10 @@ public final class MessageContentRepositoryImpl: MessageContentRepository {
 
     public func insert(
         content: String,
-        senderId: Int,
+        senderId: String,
         room: MessageRootData
     ) throws -> MessageContentData {
         let message = MessageContentData(
-            id: try self.count(),
             content: content,
             senderId: senderId,
             room: room
@@ -183,7 +181,6 @@ public final class MessageMemberRepositoryImpl: MessageMemberRepository {
 
     public func insert(name: String) throws -> MessageMember {
         let member = MessageMember(
-            id: try self.count(),
             name: name
         )
         context.insert(member)

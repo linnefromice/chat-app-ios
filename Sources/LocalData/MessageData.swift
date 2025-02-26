@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-public typealias MessageMemberID = Int
+public typealias MessageMemberID = String
 
 public enum RoomType: Codable {
     case directMessage(MessageMemberID)
@@ -13,7 +13,10 @@ public final class MessageMember {
     @Attribute(.unique) public var id: MessageMemberID
     public var name: String
 
-    public init(id: MessageMemberID, name: String) {
+    public init(
+        id: MessageMemberID = UUID().uuidString,
+        name: String
+    ) {
         self.id = id
         self.name = name
     }
@@ -21,7 +24,7 @@ public final class MessageMember {
 
 @Model
 public final class MessageRootData {
-    @Attribute(.unique) public var id: Int
+    @Attribute(.unique) public var id: String
     public var name: String
     public var roomType: RoomType
     public var lastMessageDateStored: Date
@@ -29,7 +32,7 @@ public final class MessageRootData {
     @Relationship(deleteRule: .cascade) public var messages: [MessageContentData]
 
     public init(
-        id: Int,
+        id: String = UUID().uuidString,
         name: String,
         roomType: RoomType,
         lastMessageDateStored: Date = Date(),
@@ -52,17 +55,17 @@ public final class MessageRootData {
 
 @Model
 public final class MessageContentData {
-    @Attribute(.unique) public var id: Int
+    @Attribute(.unique) public var id: String
     public var content: String
     public var createdAt: Date
-    public var senderId: Int
+    public var senderId: String
     public var room: MessageRootData?
 
     public init(
-        id: Int,
+        id: String = UUID().uuidString,
         content: String,
         createdAt: Date = Date(),
-        senderId: Int,
+        senderId: String,
         room: MessageRootData? = nil
     ) {
         self.id = id

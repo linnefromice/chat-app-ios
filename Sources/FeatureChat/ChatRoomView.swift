@@ -6,7 +6,7 @@ public struct ChatRoomView: View {
     @Query private var contents: [MessageContentData]
     @Query private var members: [MessageMember]
 
-    public init(roomId: Int) {
+    public init(roomId: String) {
         // roomに属するメッセージを時系列順で取得
         _contents = Query(
             filter: #Predicate<MessageContentData> { message in
