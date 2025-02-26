@@ -4,7 +4,9 @@ import FeatureChat
 
 struct ContentView: View {
     var body: some View {
-        ChatListView()
+        NavigationStack {
+            ChatListView()
+        }
             .modelContainer(for: [
                 MessageRootData.self,
                 MessageContentData.self

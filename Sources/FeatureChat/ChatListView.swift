@@ -13,17 +13,19 @@ public struct ChatListView: View {
     
     public var body: some View {
         List(chatRooms) { room in
-            VStack(alignment: .leading, spacing: 4) {
-                Text(room.name)
-                    .font(.headline)
-                Text(room.lastMessageContentStored)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                Text(room.lastMessageDateStored, style: .relative)
-                    .font(.caption)
-                    .foregroundColor(.gray)
+            NavigationLink(destination: ChatRoomView(roomId: room.id)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(room.name)
+                        .font(.headline)
+                    Text(room.lastMessageContentStored)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    Text(room.lastMessageDateStored, style: .relative)
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                .padding(.vertical, 4)
             }
-            .padding(.vertical, 4)
         }
         .navigationTitle("チャット")
         .onAppear {
@@ -35,17 +37,17 @@ public struct ChatListView: View {
     
     private func addSampleData() {
         let samples: [(MessageRootData, [String])] = [
-            (MessageRootData(name: "一般"), [
+            (MessageRootData(name: "DM - Mike"), [
                 "チャットルームへようこそ！",
                 "はじめまして！",
                 "こんにちは！"
             ]),
-            (MessageRootData(name: "開発チーム"), [
+            (MessageRootData(name: "Group - Dev Team"), [
                 "プロジェクトの進捗はいかがですか？",
                 "順調に進んでいます",
                 "次のミーティングは明日です"
             ]),
-            (MessageRootData(name: "雑談"), [
+            (MessageRootData(name: "Group - My Self"), [
                 "今日は晴れていますね",
                 "散歩日和です",
                 "いい天気ですね"
@@ -79,5 +81,5 @@ public struct ChatListView: View {
     .modelContainer(for: [
         MessageRootData.self,
         MessageContentData.self
-    ])
+    ], inMemory: true)
 }
