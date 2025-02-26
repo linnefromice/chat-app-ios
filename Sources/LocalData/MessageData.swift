@@ -1,5 +1,5 @@
-import SwiftData
 import Foundation
+import SwiftData
 
 @Model
 public final class MessageRootData {
@@ -22,7 +22,7 @@ public final class MessageRootData {
         self.lastMessageContentStored = lastMessageContentStored
         self.messages = messages
     }
-    
+
     public func updateLastMessage(_ message: MessageContentData) {
         self.lastMessageDateStored = message.createdAt
         self.lastMessageContentStored = message.content
@@ -35,7 +35,7 @@ public final class MessageContentData {
     public var content: String
     public var createdAt: Date
     public var room: MessageRootData?
-    
+
     public init(
         id: UUID = UUID(),
         content: String,
@@ -48,5 +48,3 @@ public final class MessageContentData {
         self.room = room
     }
 }
-
-    

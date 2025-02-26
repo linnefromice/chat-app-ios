@@ -1,6 +1,6 @@
-import SwiftUI
-import SwiftData
 import LocalData
+import SwiftData
+import SwiftUI
 
 public struct ChatListView: View {
     @Query private var chatRooms: [MessageRootData]
@@ -10,7 +10,7 @@ public struct ChatListView: View {
         // デフォルトのクエリ設定
         _chatRooms = Query(sort: \MessageRootData.lastMessageDateStored, order: .reverse)
     }
-    
+
     public var body: some View {
         List(chatRooms) { room in
             NavigationLink(destination: ChatRoomView(roomId: room.id)) {
@@ -34,26 +34,35 @@ public struct ChatListView: View {
             }
         }
     }
-    
+
     private func addSampleData() {
         let samples: [(MessageRootData, [String])] = [
-            (MessageRootData(name: "DM - Mike"), [
-                "チャットルームへようこそ！",
-                "はじめまして！",
-                "こんにちは！"
-            ]),
-            (MessageRootData(name: "Group - Dev Team"), [
-                "プロジェクトの進捗はいかがですか？",
-                "順調に進んでいます",
-                "次のミーティングは明日です"
-            ]),
-            (MessageRootData(name: "Group - My Self"), [
-                "今日は晴れていますね",
-                "散歩日和です",
-                "いい天気ですね"
-            ])
+            (
+                MessageRootData(name: "DM - Mike"),
+                [
+                    "チャットルームへようこそ！",
+                    "はじめまして！",
+                    "こんにちは！",
+                ]
+            ),
+            (
+                MessageRootData(name: "Group - Dev Team"),
+                [
+                    "プロジェクトの進捗はいかがですか？",
+                    "順調に進んでいます",
+                    "次のミーティングは明日です",
+                ]
+            ),
+            (
+                MessageRootData(name: "Group - My Self"),
+                [
+                    "今日は晴れていますね",
+                    "散歩日和です",
+                    "いい天気ですね",
+                ]
+            ),
         ]
-        
+
         samples.forEach { room, messages in
             let messageContents = messages.enumerated().map { index, content in
                 MessageContentData(
@@ -69,7 +78,7 @@ public struct ChatListView: View {
             }
             modelContext.insert(room)
         }
-        
+
         try? modelContext.save()
     }
 }
@@ -78,8 +87,9 @@ public struct ChatListView: View {
     NavigationView {
         ChatListView()
     }
-    .modelContainer(for: [
-        MessageRootData.self,
-        MessageContentData.self
-    ], inMemory: true)
+    .modelContainer(
+        for: [
+            MessageRootData.self,
+            MessageContentData.self,
+        ], inMemory: true)
 }
