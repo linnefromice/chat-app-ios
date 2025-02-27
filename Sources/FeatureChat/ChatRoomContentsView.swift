@@ -3,8 +3,11 @@ import SwiftData
 import SwiftUI
 
 public struct ChatRoomContentsView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query private var contents: [MessageContentData]
     @Query private var members: [MessageMember]
+    @Query private var rooms: [MessageRootData]
+    @State private var isShowingMessageForm = false
 
     public init(roomId: String) {
         _contents = Query(
@@ -14,15 +17,44 @@ public struct ChatRoomContentsView: View {
             sort: \MessageContentData.createdAt
         )
         _members = Query()
+        _rooms = Query(
+            filter: #Predicate<MessageRootData> { room in
+                room.id == roomId
+            }
+        )
+    }
+
+    var room: MessageRootData? {
+        rooms.first
     }
 
     public var body: some View {
-        List(contents) { message in
-            MessageRow(message: message, members: members)
-                .listRowSeparator(.hidden)
+        ZStack(alignment: .bottomTrailing) {
+            List(contents) { message in
+                MessageRow(message: message, members: members)
+                    .listRowSeparator(.hidden)
+            }
+            .background(.clear)
+            .scrollContentBackground(.hidden)
+
+            Button(action: {
+                isShowingMessageForm = true
+            }) {
+                Image(systemName: "plus.circle.fill")
+                    .resizable()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.blue)
+                    .background(Color.white.clipShape(Circle()))
+                    .shadow(radius: 3)
+            }
+            .padding()
+            .sheet(isPresented: $isShowingMessageForm) {
+                MessageFormView(room: room!) { _ in
+                    isShowingMessageForm = false
+                }
+                .presentationDetents([.medium])
+            }
         }
-        .background(.clear)
-        .scrollContentBackground(.hidden)
     }
 }
 
@@ -70,5 +102,77 @@ private struct MessageRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+}
+
+private struct MessageFormView: View {
+    let room: MessageRootData?
+    let onComplete: (Bool) -> Void
+
+    @Environment(\.modelContext) private var modelContext
+    @State private var messageText = ""
+    @FocusState private var isTextFieldFocused: Bool
+
+    init(room: MessageRootData?, onComplete: @escaping (Bool) -> Void) {
+        self.room = room
+        self.onComplete = onComplete
+    }
+
+    var factory: MessageRepositoryFactory {
+        MessageRepositoryFactoryImpl(modelContext)
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                Text("新しいメッセージ")
+                    .font(.headline)
+
+                TextField("メッセージを入力", text: $messageText, axis: .vertical)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .lineLimit(5...)
+                    .focused($isTextFieldFocused)
+
+                Button("送信") {
+                    sendMessage()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Spacer()
+            }
+            .padding()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") {
+                        onComplete(false)
+                    }
+                }
+            }
+            .onAppear {
+                isTextFieldFocused = true
+            }
+        }
+    }
+
+    private func sendMessage() {
+        guard let room = room, !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else {
+            return
+        }
+
+        withCommit(modelContext) {
+            let contentRepository = factory.contentRepository()
+            let message = try! contentRepository.insert(
+                content: messageText,
+                senderId: PLAYER_ID,
+                room: room
+            )
+
+            // 最後のメッセージを更新
+            room.updateLastMessage(message)
+        }
+
+        onComplete(true)
     }
 }
