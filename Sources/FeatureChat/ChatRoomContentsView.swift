@@ -12,7 +12,7 @@ public struct ChatRoomContentsView: View {
     @State private var hasReachedEnd: Bool = false
     @State private var scrollPosition: String? = nil
     @State private var isScrolling: Bool = false
-    
+
     @Query private var members: [MessageMember]
     @Query private var rooms: [MessageRootData]
     @State private var isShowingMessageForm = false
@@ -40,13 +40,13 @@ public struct ChatRoomContentsView: View {
             addMessageButton
         }
     }
-    
+
     // メッセージリスト部分を分離
     private var messageListView: some View {
         ScrollViewReader { proxy in
             List {
                 loadMoreSection
-                
+
                 ForEach(displayedMessages) { message in
                     MessageRow(message: message, members: members)
                         .listRowSeparator(.hidden)
@@ -56,14 +56,14 @@ public struct ChatRoomContentsView: View {
                             scrollPosition = message.id
                         }
                 }
-                
+
                 Color.clear.frame(height: 1).id("bottomAnchor")
             }
             .background(.clear)
             .scrollContentBackground(.hidden)
             .onAppear {
                 loadInitialMessages()
-                
+
                 // 初回表示時に最下部にスクロール
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     withAnimation {
@@ -79,7 +79,7 @@ public struct ChatRoomContentsView: View {
             }
         }
     }
-    
+
     // 「さらに読み込む」セクション
     private var loadMoreSection: some View {
         Group {
@@ -114,7 +114,7 @@ public struct ChatRoomContentsView: View {
             }
         }
     }
-    
+
     // メッセージ追加ボタン
     private var addMessageButton: some View {
         Button(action: {
@@ -138,7 +138,7 @@ public struct ChatRoomContentsView: View {
             .presentationDetents([.medium])
         }
     }
-    
+
     // メッセージ数変更時の処理
     private func handleMessageCountChange(proxy: ScrollViewProxy, oldCount: Int, newCount: Int) {
         // 新しいメッセージが追加された場合のみ下にスクロール
@@ -156,7 +156,7 @@ public struct ChatRoomContentsView: View {
             }
         }
     }
-    
+
     // ランダムメッセージ受信時の処理
     private func handleRandomMessage(proxy: ScrollViewProxy) {
         // 自動送信時にも最下部にスクロール
@@ -167,21 +167,21 @@ public struct ChatRoomContentsView: View {
             }
         }
     }
-    
+
     // 以下は元のコードと同じ
     private func loadInitialMessages() {
         guard let room = room else { return }
-        
+
         let descriptor = FetchDescriptor<MessageContentData>(
             predicate: #Predicate<MessageContentData> { message in
                 message.room?.id == roomId
             },
             sortBy: [SortDescriptor(\MessageContentData.createdAt, order: .forward)]
         )
-        
+
         do {
             allMessages = try modelContext.fetch(descriptor)
-            
+
             // 最新のpageSize件を表示
             if allMessages.count > pageSize {
                 displayedMessages = Array(allMessages.suffix(pageSize))
@@ -193,32 +193,33 @@ public struct ChatRoomContentsView: View {
             print("Error fetching messages: \(error)")
         }
     }
-    
+
     private func loadMoreMessages() {
         guard !isLoading, !hasReachedEnd else { return }
-        
+
         isLoading = true
-        
+
         // スクロール位置を保存
         let currentFirstMessage = displayedMessages.first
-        
+
         // 現在表示されている最も古いメッセージのインデックスを見つける
         if let oldestDisplayedMessage = displayedMessages.first,
-           let oldestIndex = allMessages.firstIndex(where: { $0.id == oldestDisplayedMessage.id }) {
-            
+            let oldestIndex = allMessages.firstIndex(where: { $0.id == oldestDisplayedMessage.id })
+        {
+
             // さらに古いメッセージを取得
             let startIndex = max(0, oldestIndex - pageSize)
             let endIndex = oldestIndex
-            
+
             if startIndex < endIndex {
                 let olderMessages = Array(allMessages[startIndex..<endIndex])
-                
+
                 // スクロール位置を保持するために現在の最初のメッセージのIDを記録
                 scrollPosition = currentFirstMessage?.id
-                
+
                 // 新しいメッセージを追加
                 displayedMessages = olderMessages + displayedMessages
-                
+
                 // 全てのメッセージを表示したかチェック
                 if startIndex == 0 {
                     hasReachedEnd = true
@@ -229,23 +230,23 @@ public struct ChatRoomContentsView: View {
         } else {
             hasReachedEnd = true
         }
-        
+
         isLoading = false
     }
-    
+
     private func refreshMessages() {
         guard let room = room else { return }
-        
+
         let descriptor = FetchDescriptor<MessageContentData>(
             predicate: #Predicate<MessageContentData> { message in
                 message.room?.id == roomId
             },
             sortBy: [SortDescriptor(\MessageContentData.createdAt, order: .forward)]
         )
-        
+
         do {
             allMessages = try modelContext.fetch(descriptor)
-            
+
             // 現在表示されているメッセージ数を維持しつつ、最新のメッセージを追加
             let currentCount = displayedMessages.count
             if allMessages.count > currentCount {
