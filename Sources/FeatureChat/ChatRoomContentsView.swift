@@ -8,6 +8,7 @@ public struct ChatRoomContentsView: View {
     @Query private var members: [MessageMember]
     @Query private var rooms: [MessageRootData]
     @State private var isShowingMessageForm = false
+    @State private var scrollToBottom = false
 
     public init(roomId: String) {
         _contents = Query(
@@ -30,12 +31,34 @@ public struct ChatRoomContentsView: View {
 
     public var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            List(contents) { message in
-                MessageRow(message: message, members: members)
-                    .listRowSeparator(.hidden)
+            ScrollViewReader { proxy in
+                List {
+                    ForEach(contents) { message in
+                        MessageRow(message: message, members: members)
+                            .listRowSeparator(.hidden)
+                            .id(message.id)
+                    }
+                    Color.clear.frame(height: 1).id("bottomAnchor")
+                }
+                .background(.clear)
+                .scrollContentBackground(.hidden)
+                .onAppear {
+                    withAnimation {
+                        proxy.scrollTo("bottomAnchor", anchor: .bottom)
+                    }
+                }
+                // NOTE: Other scrolling patterns
+                // .onChange(of: contents.count) { _, _ in
+                //     withAnimation {
+                //         proxy.scrollTo("bottomAnchor", anchor: .bottom)
+                //     }
+                // }
+                // .onReceive(NotificationCenter.default.publisher(for: .sendRandomMessage)) { _ in
+                //     withAnimation {
+                //         proxy.scrollTo("bottomAnchor", anchor: .bottom)
+                //     }
+                // }
             }
-            .background(.clear)
-            .scrollContentBackground(.hidden)
 
             Button(action: {
                 isShowingMessageForm = true
