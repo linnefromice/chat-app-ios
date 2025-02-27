@@ -4,19 +4,22 @@ import SwiftUI
 
 public struct ChatRoomContentsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var contents: [MessageContentData]
+    @State private var displayedMessages: [MessageContentData] = []
+    @State private var allMessages: [MessageContentData] = []
+    @State private var pageSize: Int = 10
+    @State private var currentPage: Int = 1
+    @State private var isLoading: Bool = false
+    @State private var hasReachedEnd: Bool = false
+    
     @Query private var members: [MessageMember]
     @Query private var rooms: [MessageRootData]
     @State private var isShowingMessageForm = false
     @State private var scrollToBottom = false
 
+    private let roomId: String
+
     public init(roomId: String) {
-        _contents = Query(
-            filter: #Predicate<MessageContentData> { message in
-                message.room?.id == roomId
-            },
-            sort: \MessageContentData.createdAt
-        )
+        self.roomId = roomId
         _members = Query()
         _rooms = Query(
             filter: #Predicate<MessageRootData> { room in
@@ -33,31 +36,59 @@ public struct ChatRoomContentsView: View {
         ZStack(alignment: .bottomTrailing) {
             ScrollViewReader { proxy in
                 List {
-                    ForEach(contents) { message in
+                    if !hasReachedEnd {
+                        Button(action: loadMoreMessages) {
+                            if isLoading {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            } else {
+                                Text("さらに読み込む")
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            }
+                        }
+                        .buttonStyle(.borderless)
+                        .id("loadMoreButton")
+                        .disabled(isLoading || hasReachedEnd)
+                    }
+                    
+                    ForEach(displayedMessages) { message in
                         MessageRow(message: message, members: members)
                             .listRowSeparator(.hidden)
                             .id(message.id)
                     }
+                    
                     Color.clear.frame(height: 1).id("bottomAnchor")
                 }
                 .background(.clear)
                 .scrollContentBackground(.hidden)
                 .onAppear {
-                    withAnimation {
-                        proxy.scrollTo("bottomAnchor", anchor: .bottom)
+                    loadInitialMessages()
+                    
+                    // 初回表示時に最下部にスクロール
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation {
+                            proxy.scrollTo("bottomAnchor", anchor: .bottom)
+                        }
                     }
                 }
-                // NOTE: Other scrolling patterns
-                // .onChange(of: contents.count) { _, _ in
-                //     withAnimation {
-                //         proxy.scrollTo("bottomAnchor", anchor: .bottom)
-                //     }
-                // }
-                // .onReceive(NotificationCenter.default.publisher(for: .sendRandomMessage)) { _ in
-                //     withAnimation {
-                //         proxy.scrollTo("bottomAnchor", anchor: .bottom)
-                //     }
-                // }
+                .onChange(of: displayedMessages.count) { oldCount, newCount in
+                    // 新しいメッセージが追加された場合のみ下にスクロール
+                    // (上に読み込んだ場合はスクロールしない)
+                    if oldCount < newCount && newCount - oldCount <= 1 {
+                        withAnimation {
+                            proxy.scrollTo("bottomAnchor", anchor: .bottom)
+                        }
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .sendRandomMessage)) { _ in
+                    // 自動送信時にも最下部にスクロール
+                    refreshMessages()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation {
+                            proxy.scrollTo("bottomAnchor", anchor: .bottom)
+                        }
+                    }
+                }
             }
 
             Button(action: {
@@ -72,11 +103,96 @@ public struct ChatRoomContentsView: View {
             }
             .padding()
             .sheet(isPresented: $isShowingMessageForm) {
-                MessageFormView(room: room!) { _ in
+                MessageFormView(room: room!) { success in
                     isShowingMessageForm = false
+                    if success {
+                        refreshMessages()
+                    }
                 }
                 .presentationDetents([.medium])
             }
+        }
+    }
+    
+    private func loadInitialMessages() {
+        guard let room = room else { return }
+        
+        let descriptor = FetchDescriptor<MessageContentData>(
+            predicate: #Predicate<MessageContentData> { message in
+                message.room?.id == roomId
+            },
+            sortBy: [SortDescriptor(\MessageContentData.createdAt, order: .forward)]
+        )
+        
+        do {
+            allMessages = try modelContext.fetch(descriptor)
+            
+            // 最新のpageSize件を表示
+            if allMessages.count > pageSize {
+                displayedMessages = Array(allMessages.suffix(pageSize))
+            } else {
+                displayedMessages = allMessages
+                hasReachedEnd = true
+            }
+        } catch {
+            print("Error fetching messages: \(error)")
+        }
+    }
+    
+    private func loadMoreMessages() {
+        guard !isLoading, !hasReachedEnd else { return }
+        
+        isLoading = true
+        
+        // 現在表示されている最も古いメッセージのインデックスを見つける
+        if let oldestDisplayedMessage = displayedMessages.first,
+           let oldestIndex = allMessages.firstIndex(where: { $0.id == oldestDisplayedMessage.id }) {
+            
+            // さらに古いメッセージを取得
+            let startIndex = max(0, oldestIndex - pageSize)
+            let endIndex = oldestIndex
+            
+            if startIndex < endIndex {
+                let olderMessages = Array(allMessages[startIndex..<endIndex])
+                displayedMessages = olderMessages + displayedMessages
+                
+                // 全てのメッセージを表示したかチェック
+                if startIndex == 0 {
+                    hasReachedEnd = true
+                }
+            } else {
+                hasReachedEnd = true
+            }
+        } else {
+            hasReachedEnd = true
+        }
+        
+        isLoading = false
+    }
+    
+    private func refreshMessages() {
+        guard let room = room else { return }
+        
+        let descriptor = FetchDescriptor<MessageContentData>(
+            predicate: #Predicate<MessageContentData> { message in
+                message.room?.id == roomId
+            },
+            sortBy: [SortDescriptor(\MessageContentData.createdAt, order: .forward)]
+        )
+        
+        do {
+            allMessages = try modelContext.fetch(descriptor)
+            
+            // 現在表示されているメッセージ数を維持しつつ、最新のメッセージを追加
+            let currentCount = displayedMessages.count
+            if allMessages.count > currentCount {
+                displayedMessages = Array(allMessages.suffix(currentCount + 1))
+            } else {
+                displayedMessages = allMessages
+                hasReachedEnd = true
+            }
+        } catch {
+            print("Error refreshing messages: \(error)")
         }
     }
 }
