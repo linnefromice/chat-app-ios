@@ -4,14 +4,14 @@ import SwiftData
 public typealias MessageMemberID = String
 
 public enum RoomType: Codable {
-    case directMessage(MessageMemberID)
-    case group([MessageMemberID])
+    case directMessage
+    case group
 
     public var name: String {
         switch self {
-        case .directMessage(_):
+        case .directMessage:
             return "Direct Message"
-        case .group(_):
+        case .group:
             return "Group"
         }
     }
@@ -36,6 +36,7 @@ public final class MessageRootData {
     @Attribute(.unique) public var id: String
     public var name: String
     public var roomType: RoomType
+    public var memberIds: [MessageMemberID]
     public var lastMessageDateStored: Date
     public var lastMessageContentStored: String
     @Relationship(deleteRule: .cascade) public var messages: [MessageContentData]
@@ -44,6 +45,7 @@ public final class MessageRootData {
         id: String = UUID().uuidString,
         name: String,
         roomType: RoomType,
+        memberIds: [MessageMemberID],
         lastMessageDateStored: Date = Date(),
         lastMessageContentStored: String = "",
         messages: [MessageContentData] = []
@@ -51,6 +53,7 @@ public final class MessageRootData {
         self.id = id
         self.name = name
         self.roomType = roomType
+        self.memberIds = memberIds
         self.lastMessageDateStored = lastMessageDateStored
         self.lastMessageContentStored = lastMessageContentStored
         self.messages = messages

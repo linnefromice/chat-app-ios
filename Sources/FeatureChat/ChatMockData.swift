@@ -62,7 +62,7 @@ func registerAllMembers(
     _ repository: any MessageMemberRepository
 ) throws {
     DUMMY_MEMBERS.forEach { name in
-        try! repository.insert(name: name)
+        let _ = try! repository.insert(name: name)
     }
 }
 
@@ -70,6 +70,7 @@ func generateMockRoom(
     _ factory: any MessageRepositoryFactory,
     name: String,
     roomType: RoomType,
+    memberIds: [MessageMemberID],
     messages: [(senderId: String, content: String)]
 ) throws {
     let rootRepository = factory.rootRepository()
@@ -78,6 +79,7 @@ func generateMockRoom(
     let room = try! rootRepository.insert(
         name: name,
         roomType: roomType,
+        memberIds: memberIds,
         lastMessageDateStored: Date(),
         lastMessageContentStored: ""
     )
@@ -108,26 +110,30 @@ func bulkGenerateMockRoom(
 
     let selectedNames = Array(DUMMY_NAMES.shuffled().prefix(roomCount))
     selectedNames.forEach { name, isDM in
+        let shuffledMembers = members.shuffled()
+
         let messageContents = Array(DUMMY_MESSAGES.shuffled().prefix(messageCount))
-        let memberCount = Int.random(in: minMemberCount...maxMemberCount)
-        let selectedMembers = Array(members.shuffled().prefix(memberCount))
-        // NOTE: 0 is player
-        let senderIds = [PLAYER_ID] + selectedMembers.map(\.id)
+        let (roomType, memberIds): (RoomType, [MessageMemberID]) =
+            isDM
+            ? (RoomType.directMessage, [shuffledMembers.first!.id])
+            : (
+                RoomType.group,
+                Array(
+                    shuffledMembers.prefix(Int.random(in: minMemberCount...maxMemberCount)).map(
+                        \.id))
+            )
+        let senderIds = [PLAYER_ID] + memberIds
 
         let messages = messageContents.map { msg in
             let senderId = senderIds.randomElement()!
             return (senderId, msg)
         }
 
-        let roomType: RoomType =
-            isDM
-            ? .directMessage(selectedMembers.first!.id)
-            : .group(selectedMembers.map(\.id))
-
         try! generateMockRoom(
             factory,
             name: name,
             roomType: roomType,
+            memberIds: memberIds,
             messages: messages
         )
     }

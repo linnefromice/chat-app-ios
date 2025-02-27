@@ -67,7 +67,6 @@ public struct ChatEntryView: View {
             .navigationTitle("Chat App")
         }
         .onAppear {
-
             let memberRepository = factory.memberRepository()
             if try! memberRepository.count() == 0 {
                 withCommit(modelContext) {

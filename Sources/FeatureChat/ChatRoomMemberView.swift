@@ -5,7 +5,7 @@ import SwiftUI
 public struct ChatRoomMemberView: View {
     @Query private var rooms: [MessageRootData]
     @Query private var members: [MessageMember]
-    
+
     public init(roomId: String) {
         _rooms = Query(
             filter: #Predicate<MessageRootData> { room in
@@ -14,25 +14,19 @@ public struct ChatRoomMemberView: View {
         )
         _members = Query()
     }
-    
+
     private var room: MessageRootData? {
         rooms.first
     }
-    
+
     private var memberIds: [String] {
-        guard let room = room else { return [] }
-        switch room.roomType {
-        case .directMessage(let id):
-            return [id]
-        case .group(let ids):
-            return ids
-        }
+        room?.memberIds ?? []
     }
-    
+
     private var roomMembers: [MessageMember] {
         members.filter { memberIds.contains($0.id) }
     }
-    
+
     public var body: some View {
         VStack {
             if let room = room {
@@ -50,7 +44,7 @@ public struct ChatRoomMemberView: View {
 
 private struct MemberRow: View {
     let name: String
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Circle()
@@ -60,10 +54,10 @@ private struct MemberRow: View {
                     Text(name.prefix(1))
                         .foregroundColor(.gray)
                 )
-            
+
             Text(name)
                 .font(.body)
         }
         .padding(.vertical, 4)
     }
-} 
+}

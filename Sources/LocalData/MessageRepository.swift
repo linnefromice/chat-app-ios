@@ -17,6 +17,7 @@ public protocol MessageRootRepository {
     func insert(
         name: String,
         roomType: RoomType,
+        memberIds: [MessageMemberID],
         lastMessageDateStored: Date,
         lastMessageContentStored: String
     ) throws -> MessageRootData
@@ -59,12 +60,14 @@ public final class MessageRootRepositoryImpl: MessageRootRepository {
     public func insert(
         name: String,
         roomType: RoomType,
+        memberIds: [MessageMemberID],
         lastMessageDateStored: Date = Date(),
         lastMessageContentStored: String = ""
     ) throws -> MessageRootData {
         let room = MessageRootData(
             name: name,
             roomType: roomType,
+            memberIds: memberIds,
             lastMessageDateStored: lastMessageDateStored,
             lastMessageContentStored: lastMessageContentStored
         )
