@@ -149,10 +149,10 @@ public final class MessageContentRepositoryImpl: MessageContentRepository {
 // MARK: - Message Member Repository
 
 public protocol MessageMemberRepository {
-    func find(_ id: MessageMemberID) throws -> MessageMember?
-    func getAll() throws -> [MessageMember]
+    func find(_ id: MessageMemberID) throws -> MessageMemberData?
+    func getAll() throws -> [MessageMemberData]
     func count() throws -> Int
-    func insert(name: String) throws -> MessageMember
+    func insert(name: String) throws -> MessageMemberData
     func deleteAll() throws
 }
 
@@ -163,8 +163,8 @@ public final class MessageMemberRepositoryImpl: MessageMemberRepository {
         self.context = context
     }
 
-    public func find(_ id: MessageMemberID) throws -> MessageMember? {
-        let descriptor = FetchDescriptor<MessageMember>(
+    public func find(_ id: MessageMemberID) throws -> MessageMemberData? {
+        let descriptor = FetchDescriptor<MessageMemberData>(
             predicate: #Predicate { member in
                 member.id == id
             }
@@ -172,18 +172,18 @@ public final class MessageMemberRepositoryImpl: MessageMemberRepository {
         return try context.fetch(descriptor).first
     }
 
-    public func getAll() throws -> [MessageMember] {
-        let descriptor = FetchDescriptor<MessageMember>()
+    public func getAll() throws -> [MessageMemberData] {
+        let descriptor = FetchDescriptor<MessageMemberData>()
         return try context.fetch(descriptor)
     }
 
     public func count() throws -> Int {
-        let descriptor = FetchDescriptor<MessageMember>()
+        let descriptor = FetchDescriptor<MessageMemberData>()
         return try context.fetchCount(descriptor)
     }
 
-    public func insert(name: String) throws -> MessageMember {
-        let member = MessageMember(
+    public func insert(name: String) throws -> MessageMemberData {
+        let member = MessageMemberData(
             name: name
         )
         context.insert(member)
@@ -191,7 +191,7 @@ public final class MessageMemberRepositoryImpl: MessageMemberRepository {
     }
 
     public func deleteAll() throws {
-        try context.delete(model: MessageMember.self)
+        try context.delete(model: MessageMemberData.self)
     }
 }
 

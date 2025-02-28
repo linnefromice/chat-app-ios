@@ -4,7 +4,7 @@ import SwiftUI
 
 public struct ChatRoomMemberView: View {
     @Query private var rooms: [MessageRootData]
-    @Query private var members: [MessageMember]
+    @Query private var members: [MessageMemberData]
 
     public init(roomId: String) {
         _rooms = Query(
@@ -23,7 +23,7 @@ public struct ChatRoomMemberView: View {
         room?.memberIds ?? []
     }
 
-    private var roomMembers: [MessageMember] {
+    private var roomMembers: [MessageMemberData] {
         members.filter { memberIds.contains($0.id) }
     }
 

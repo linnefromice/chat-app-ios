@@ -6,7 +6,7 @@ import SwiftUI
 public struct ChatRoomDebugView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var rooms: [MessageRootData]
-    @Query private var members: [MessageMember]
+    @Query private var members: [MessageMemberData]
 
     @Binding var isAutoSending: Bool
     @Binding var messageInterval: Double
@@ -53,13 +53,13 @@ public struct ChatRoomDebugView: View {
         rooms.first
     }
 
-    private var roomMembers: [MessageMember] {
+    private var roomMembers: [MessageMemberData] {
         guard let room = room else { return [] }
         return members.filter { room.memberIds.contains($0.id) }
     }
 
-    private var availableSenders: [MessageMember] {
-        [MessageMember(id: PLAYER_ID, name: "自分")] + roomMembers
+    private var availableSenders: [MessageMemberData] {
+        [MessageMemberData(id: PLAYER_ID, name: "自分")] + roomMembers
     }
 
     var factory: MessageRepositoryFactory {

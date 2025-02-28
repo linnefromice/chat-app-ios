@@ -114,6 +114,6 @@ public struct ChatEntryView: View {
             for: [
                 MessageRootData.self,
                 MessageContentData.self,
-                MessageMember.self,
+                MessageMemberData.self,
             ], inMemory: true)
 }

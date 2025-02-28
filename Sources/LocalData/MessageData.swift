@@ -18,7 +18,7 @@ public enum RoomType: Codable {
 }
 
 @Model
-public final class MessageMember {
+public final class MessageMemberData {
     @Attribute(.unique) public var id: MessageMemberID
     public var name: String
 
@@ -88,7 +88,7 @@ public final class MessageContentData {
     }
 }
 
-extension MessageMember {
+extension MessageMemberData {
     public func debugPrintAllAttributes() {
         let mirror = Mirror(reflecting: self)
         var attributes: [String: String] = [:]

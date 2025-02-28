@@ -13,7 +13,7 @@ public struct ChatRoomContentsView: View {
     @State private var scrollPosition: String? = nil
     @State private var isScrolling: Bool = false
 
-    @Query private var members: [MessageMember]
+    @Query private var members: [MessageMemberData]
     @Query private var rooms: [MessageRootData]
     @State private var isShowingMessageForm = false
     @State private var scrollToBottom = false
@@ -263,7 +263,7 @@ public struct ChatRoomContentsView: View {
 
 private struct MessageRow: View {
     let message: MessageContentData
-    let members: [MessageMember]
+    let members: [MessageMemberData]
 
     private var isFromCurrentUser: Bool {
         message.senderId == PLAYER_ID
